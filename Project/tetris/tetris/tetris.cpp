@@ -34,7 +34,7 @@ int STATUS_Y_GOAL; //GOAL 정보표시위치Y 좌표 저장
 int STATUS_Y_LEVEL; //LEVEL 정보표시위치Y 좌표 저장
 int STATUS_Y_SCORE; //SCORE 정보표시위치Y 좌표 저장
 
-int blocks[7][4][4][4] = {
+int blocks[8][4][4][4] = {
 {{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},
  {0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0},{0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0}},
 {{0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0},{0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0},
@@ -48,7 +48,31 @@ int blocks[7][4][4][4] = {
 {{0,0,0,0,1,0,0,0,1,1,1,0,0,0,0,0},{0,0,0,0,0,1,0,0,0,1,0,0,1,1,0,0},
  {0,0,0,0,0,0,0,0,1,1,1,0,0,0,1,0},{0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,0}},
 {{0,0,0,0,0,1,0,0,1,1,1,0,0,0,0,0},{0,0,0,0,0,1,0,0,0,1,1,0,0,1,0,0},
- {0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0},{0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0}}
+ {0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0},{0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0}},
+
+
+{{
+1,1,1,1,
+1,1,1,1,
+1,1,1,1,
+1,1,1,1
+},{
+1,1,1,1,
+1,1,1,1,
+1,1,1,1,
+1,1,1,1
+},
+{
+1,1,1,1,
+1,1,1,1,
+1,1,1,1,
+1,1,1,1
+},{
+1,1,1,1,
+1,1,1,1,
+1,1,1,1,
+1,1,1,1
+}}
 }; //블록모양 저장 4*4공간에 블록을 표현 blcoks[b_type][b_rotation][i][j]로 사용 
 
 int b_type; //블록 종류를 저장 
@@ -57,8 +81,8 @@ int b_type_next; //다음 블록값 저장
 
 int main_org[MAIN_Y][MAIN_X]; //게임판의 정보를 저장하는 배열 모니터에 표시후에 main_cpy로 복사됨 
 int main_cpy[MAIN_Y][MAIN_X]; //즉 maincpy는 게임판이 모니터에 표시되기 전의 정보를 가지고 있음 
-							  //main의 전체를 계속 모니터에 표시하지 않고(이렇게 하면 모니터가 깜빡거림) 
-							  //main_cpy와 배열을 비교해서 값이 달라진 곳만 모니터에 고침 
+					   //main의 전체를 계속 모니터에 표시하지 않고(이렇게 하면 모니터가 깜빡거림) 
+					   //main_cpy와 배열을 비교해서 값이 달라진 곳만 모니터에 고침 
 int bx, by; //이동중인 블록의 게임판상의 x,y좌표를 저장 
 
 int key; //키보드로 입력받은 키값을 저장 
@@ -75,6 +99,9 @@ int new_block_on = 0; //새로운 블럭이 필요함을 알리는 flag
 int crush_on = 0; //현재 이동중인 블록이 충돌상태인지 알려주는 flag 
 int level_up_on = 0; //다음레벨로 진행(현재 레벨목표가 완료되었음을) 알리는 flag 
 int space_key_on = 0; //hard drop상태임을 알려주는 flag 
+
+int GreatBlock = 0; // 특수 블럭 Flag
+int GreatBlockStart = 0;
 
 void title(void); //게임시작화면 
 void reset(void); //게임판 초기화 
@@ -238,7 +265,7 @@ void reset_main_cpy(void) { //main_cpy를 초기화
 
 void draw_map(void) { //게임 상태 표시를 나타내는 함수  
 	int y = 3;             // level, goal, score만 게임중에 값이 바뀔수 도 있음 그 y값을 따로 저장해둠 
-						 // 그래서 혹시 게임 상태 표시 위치가 바뀌어도 그 함수에서 안바꿔도 되게.. 
+					// 그래서 혹시 게임 상태 표시 위치가 바뀌어도 그 함수에서 안바꿔도 되게.. 
 	gotoxy(STATUS_X_ADJ, STATUS_Y_LEVEL = y); printf(" LEVEL : %5d", level);
 	gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL = y + 1); printf(" GOAL  : %5d", 10 - cnt);
 	gotoxy(STATUS_X_ADJ, y + 2); printf("+-  N E X T  -+ ");
@@ -248,7 +275,7 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
 	gotoxy(STATUS_X_ADJ, y + 6); printf("|             | ");
 	gotoxy(STATUS_X_ADJ, y + 7); printf("+-- -  -  - --+ ");
 	gotoxy(STATUS_X_ADJ, y + 8); printf(" YOUR SCORE :");
-	gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE = y + 9); printf("        %6d", score);
+	gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE = (y + 9)); printf("        %6d", score);
 	gotoxy(STATUS_X_ADJ, y + 10); printf(" LAST SCORE :");
 	gotoxy(STATUS_X_ADJ, y + 11); printf("        %6d", last_score);
 	gotoxy(STATUS_X_ADJ, y + 12); printf(" BEST SCORE :");
@@ -262,14 +289,15 @@ void draw_map(void) { //게임 상태 표시를 나타내는 함수
 void draw_main(void) { //게임판 그리는 함수 
 	int i, j;
 
-	for (j = 1; j < MAIN_X - 1; j++) { 
+	for (j = 1; j < MAIN_X - 1; j++) {
 		//천장은 계속 새로운블럭이 지나가서 지워지면 새로 그려줌 
 		if (main_org[3][j] == EMPTY) main_org[3][j] = CEILLING;
 	}
+
 	for (i = 0; i < MAIN_Y; i++) {
 		for (j = 0; j < MAIN_X; j++) {
-			if (main_cpy[i][j] != main_org[i][j]) { 
-				//cpy랑 비교해서 값이 달라진 부분만 새로 그려줌.
+			if (main_cpy[i][j] != main_org[i][j]) {
+				//cpy랑 비교해서 값이 달라진 부분만 새로 그려줌
 				//이게 없으면 게임판전체를 계속 그려서 느려지고 반짝거림
 				gotoxy(MAIN_X_ADJ + j, MAIN_Y_ADJ + i);
 				switch (main_org[i][j]) {
@@ -286,7 +314,13 @@ void draw_main(void) { //게임판 그리는 함수
 					printf("□");
 					break;
 				case ACTIVE_BLOCK: //움직이고있는 블럭 모양  
-					printf("■");
+					if (GreatBlockStart) {
+
+						printf("♥");
+					}
+					else {
+						printf("■");
+					}
 					break;
 				}
 			}
@@ -302,28 +336,57 @@ void draw_main(void) { //게임판 그리는 함수
 void new_block(void) { //새로운 블록 생성  
 	int i, j;
 
+
 	bx = (MAIN_X / 2) - 1; //블록 생성 위치x좌표(게임판의 가운데) 
 	by = 0;  //블록 생성위치 y좌표(제일 위) 
 	b_type = b_type_next; //다음블럭값을 가져옴 
-	b_type_next = rand() % 7; //다음 블럭을 만듦 
 	b_rotation = 0;  //회전은 0번으로 가져옴 
 
-	new_block_on = 0; //new_block flag를 끔  
+	if (b_type_next == 7) {
+		GreatBlockStart = 1;
+	}
 
-	for (i = 0; i < 4; i++) { //게임판 bx, by위치에 블럭생성  
-		for (j = 0; j < 4; j++) {
-			if (blocks[b_type][b_rotation][i][j] == 1) main_org[by + i][bx + j] = ACTIVE_BLOCK;
+	if (GreatBlock) {
+		b_type_next = 7; //다음 블럭을 만듦 
+		new_block_on = 0; //new_block flag를 끔  
+
+		for (i = 0; i < 4; i++) { //게임판 bx, by위치에 블럭생성  
+			for (j = 0; j < 4; j++) {
+				if (blocks[b_type][b_rotation][i][j] == 1) main_org[by + i][bx + j] = ACTIVE_BLOCK;
+			}
+		}
+		for (i = 1; i < 3; i++) { //게임상태표시에 다음에 나올블럭을 그림 
+			for (j = 0; j < 4; j++) {
+				if (blocks[b_type_next][0][i][j] == 50) {
+					gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
+					printf("♥");
+				}
+				else {
+					gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
+					printf("  ");
+				}
+			}
 		}
 	}
-	for (i = 1; i < 3; i++) { //게임상태표시에 다음에 나올블럭을 그림 
-		for (j = 0; j < 4; j++) {
-			if (blocks[b_type_next][0][i][j] == 1) {
-				gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
-				printf("■");
+	else {
+		b_type_next = rand() % 7; //다음 블럭을 만듦 
+		new_block_on = 0; //new_block flag를 끔  
+
+		for (i = 0; i < 4; i++) { //게임판 bx, by위치에 블럭생성  
+			for (j = 0; j < 4; j++) {
+				if (blocks[b_type][b_rotation][i][j] == 1) main_org[by + i][bx + j] = ACTIVE_BLOCK;
 			}
-			else {
-				gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
-				printf("  ");
+		}
+		for (i = 1; i < 3; i++) { //게임상태표시에 다음에 나올블럭을 그림 
+			for (j = 0; j < 4; j++) {
+				if (blocks[b_type_next][0][i][j] == 1) {
+					gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
+					printf("■");
+				}
+				else {
+					gotoxy(STATUS_X_ADJ + 2 + j, i + 6);
+					printf("  ");
+				}
 			}
 		}
 	}
@@ -380,7 +443,8 @@ void drop_block(void) {
 
 	if (crush_on && check_crush(bx, by + 1, b_rotation) == true) crush_on = 0;
 	//밑이 비어있으면 crush flag 끔 
-	if (crush_on && check_crush(bx, by + 1, b_rotation) == false) { 
+
+	if (crush_on && check_crush(bx, by + 1, b_rotation) == false) {
 		//밑이 비어있지않고 crush flag가 켜저있으면 
 		for (i = 0; i < MAIN_Y; i++) { //현재 조작중인 블럭을 굳힘 
 			for (j = 0; j < MAIN_X; j++) {
@@ -392,9 +456,9 @@ void drop_block(void) {
 		new_block_on = 1; //새로운 블럭생성 flag를 켬    
 		return; //함수 종료 
 	}
-	if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN); 
+	if (check_crush(bx, by + 1, b_rotation) == true) move_block(DOWN);
 	//밑이 비어있으면 밑으로 한칸 이동 
-	if (check_crush(bx, by + 1, b_rotation) == false) crush_on++; 
+	if (check_crush(bx, by + 1, b_rotation) == false) crush_on++;
 	//밑으로 이동이 안되면  crush flag를 켬
 }
 
@@ -403,7 +467,13 @@ int check_crush(int bx, int by, int b_rotation) { //지정된 좌표와 회전값으로 충�
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) { //지정된 위치의 게임판과 블럭모양을 비교해서 겹치면 false를 리턴 
-			if (blocks[b_type][b_rotation][i][j] == 1 && main_org[by + i][bx + j] > 0) return false;
+			if (GreatBlockStart) {
+				if (blocks[b_type][b_rotation][i][j] == 1 && main_org[by + i][bx + j] == WALL
+					) return false;
+			}
+			else {
+				if (blocks[b_type][b_rotation][i][j] == 1 && main_org[by + i][bx + j] > 0) return false;
+			}
 		}
 	}
 	return true; //하나도 안겹치면 true리턴 
@@ -470,7 +540,7 @@ void move_block(int dir) { //블록을 이동시킴
 		break;
 
 	case 100: //블록이 바닥, 혹은 다른 블록과 닿은 상태에서 한칸위로 올려 회전이 가능한 경우 
-			  //이를 동작시키는 특수동작 
+			//이를 동작시키는 특수동작 
 		for (i = 0; i < 4; i++) {
 			for (j = 0; j < 4; j++) {
 				if (blocks[b_type][b_rotation][i][j] == 1) main_org[by + i][bx + j] = EMPTY;
@@ -516,15 +586,30 @@ void check_line(void) {
 		else i--;
 	}
 	if (combo) { //줄 삭제가 있는 경우 점수와 레벨 목표를 새로 표시함  
-		if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
+		if (combo >= 2) {
+			GreatBlock = 1; // 특수블럭 on
 			gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + by - 2); printf("%d COMBO!", combo);
 			Sleep(500);
 			score += (combo * level * 100);
 			reset_main_cpy(); //텍스트를 지우기 위해 main_cpy을 초기화.
-//(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
+		}
+		else {
+			GreatBlock = 0; // 특수블럭 off
+			GreatBlockStart = 0;
+			if (combo > 1) { //2콤보이상인 경우 경우 보너스및 메세지를 게임판에 띄웠다가 지움 
+				gotoxy(MAIN_X_ADJ + (MAIN_X / 2) - 1, MAIN_Y_ADJ + by - 2); printf("%d COMBO!", combo);
+				Sleep(500);
+				score += (combo * level * 100);
+				reset_main_cpy(); //텍스트를 지우기 위해 main_cpy을 초기화.
+	   //(main_cpy와 main_org가 전부 다르므로 다음번 draw()호출시 게임판 전체를 새로 그리게 됨) 
+			}
 		}
 		gotoxy(STATUS_X_ADJ, STATUS_Y_GOAL); printf(" GOAL  : %5d", (cnt <= 10) ? 10 - cnt : 0);
 		gotoxy(STATUS_X_ADJ, STATUS_Y_SCORE); printf("        %6d", score);
+	}
+	else {
+		GreatBlock = 0;
+		GreatBlockStart = 0;
 	}
 }
 
@@ -563,7 +648,7 @@ void check_level_up(void) {
 		}
 		Sleep(100); //별찍은거 보여주기 위해 delay 
 		check_line(); //블록으로 모두 채운것 지우기
-//.check_line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.         
+  //.check_line()함수 내부에서 level up flag가 켜져있는 경우 점수는 없음.         
 		switch (level) { //레벨별로 속도를 조절해줌. 
 		case 2:
 			speed = 50;
@@ -638,14 +723,14 @@ void check_game_over(void) {
 			}
 			Sleep(1000);
 
-			while (kbhit()) getch();
-			key = getch();
+			while (kbhit()) getch();  //키 버퍼를 비움
+			key = getch();           //키 입력
 
 			switch (key) {
-			case 114:
-				reset();
+			case 114:              //키 = r 이면
+				reset();           //reset
 				break;
-			case ESC:
+			case ESC:              //키 = esc 이면 exit
 				system("cls");
 				exit(0);
 				break;
